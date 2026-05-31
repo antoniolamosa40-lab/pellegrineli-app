@@ -125,7 +125,6 @@ export default function Dashboard() {
           </button>
         ))}
 
-        {/* 🔥 BLOCO DE CONVERSÃO PRO */}
         {!isPro && (
           <div style={{
             marginTop: 25,
@@ -160,15 +159,18 @@ export default function Dashboard() {
           </div>
         )}
 
-        <button onClick={sair} style={{
-          width: "100%",
-          marginTop: 15,
-          padding: 12,
-          borderRadius: 10,
-          background: "transparent",
-          border: "1px solid #333",
-          color: "#fff"
-        }}>
+        <button
+          onClick={sair}
+          style={{
+            width: "100%",
+            marginTop: 15,
+            padding: 12,
+            borderRadius: 10,
+            background: "transparent",
+            border: "1px solid #333",
+            color: "#fff"
+          }}
+        >
           Sair
         </button>
 
@@ -189,7 +191,6 @@ export default function Dashboard() {
           Sistema de inteligência financeira em tempo real
         </p>
 
-        {/* CARDS */}
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
@@ -199,7 +200,6 @@ export default function Dashboard() {
           <Card title="Mercado" value={mercado} />
         </div>
 
-        {/* FEED */}
         <div style={{
           marginTop: 30,
           padding: 20,
@@ -209,7 +209,7 @@ export default function Dashboard() {
         }}>
           <h3 style={{ color: "#f5c542" }}>Inteligência de Mercado</h3>
 
-          {(isPro ? feed : feed.slice(0, 2)).map((item, i) => (
+          {feed.slice(0, isPro ? 5 : 2).map((item, i) => (
             <div key={i} style={{
               marginTop: 10,
               padding: 12,
@@ -265,7 +265,7 @@ function Card({ title, value }: any) {
   )
 }
 
-function btn(active: boolean) {
+function btn(active: boolean): React.CSSProperties {
   return {
     width: "100%",
     padding: 12,
@@ -274,7 +274,7 @@ function btn(active: boolean) {
     background: active ? "#1a1a1a" : "transparent",
     border: "1px solid #333",
     color: "#fff",
-    textAlign: "left",
+    textAlign: "left" as const,
     cursor: "pointer"
   }
 }
