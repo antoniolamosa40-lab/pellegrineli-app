@@ -1,16 +1,33 @@
-// lib/authGuard.ts
+export function login(email: string) {
+  localStorage.setItem("logged", "true")
 
-export function isLoggedIn() {
-  if (typeof window === "undefined") return false
-  return !!localStorage.getItem("usuario_logado")
-}
+  localStorage.setItem("userEmail", email)
 
-export function isProUser() {
-  if (typeof window === "undefined") return false
-  return localStorage.getItem("usuario_pro") === "true"
+  const proUsers = [
+    "pro@pellegrineli.com",
+    "admin@pellegrineli.com",
+    "antonio@pro.com"
+  ]
+
+  const isPro = proUsers.includes(email.toLowerCase())
+
+  localStorage.setItem("isPro", isPro ? "true" : "false")
 }
 
 export function logout() {
-  localStorage.removeItem("usuario_logado")
-  localStorage.removeItem("usuario_pro")
+  localStorage.removeItem("logged")
+  localStorage.removeItem("isPro")
+  localStorage.removeItem("userEmail")
+}
+
+export function isLoggedIn() {
+  return localStorage.getItem("logged") === "true"
+}
+
+export function isProUser() {
+  return localStorage.getItem("isPro") === "true"
+}
+
+export function getUserEmail() {
+  return localStorage.getItem("userEmail")
 }

@@ -1,155 +1,175 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { supabase } from "@/lib/supabase"
 
-export default function Login() {
+export default function LoginPage() {
 
-  const router = useRouter()
+  const [email, setEmail] =
+    useState("")
 
-  const [email, setEmail] = useState("")
-  const [senha, setSenha] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [password, setPassword] =
+    useState("")
 
-  function entrar() {
+  const [loading, setLoading] =
+    useState(false)
 
-    if (!email || !senha) {
-      alert("Preencha todos os campos")
-      return
-    }
+  async function handleLogin() {
 
     setLoading(true)
 
-    setTimeout(() => {
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
 
-      // 🔐 SIMULAÇÃO DE LOGIN
-      localStorage.setItem("usuario_logado", email)
+    if (error) {
 
-      // 🟡 padrão FREE inicial
-      localStorage.setItem("usuario_pro", "false")
+      alert(error.message)
 
       setLoading(false)
 
-      router.push("/dashboard")
+      return
+    }
 
-    }, 800)
-
+    window.location.href = "/dashboard"
   }
 
-  function entrarPro() {
-
-    if (!email || !senha) {
-      alert("Preencha todos os campos")
-      return
-    }
+  async function handleRegister() {
 
     setLoading(true)
 
-    setTimeout(() => {
+    const { error } =
+      await supabase.auth.signUp({
+        email,
+        password
+      })
 
-      // 🔐 LOGIN
-      localStorage.setItem("usuario_logado", email)
+    if (error) {
 
-      // 💎 MARCA COMO PRO
-      localStorage.setItem("usuario_pro", "true")
+      alert(error.message)
 
       setLoading(false)
 
-      router.push("/dashboard")
+      return
+    }
 
-    }, 800)
+    alert(
+      "Conta criada! Verifique seu e-mail."
+    )
 
+    setLoading(false)
   }
 
   return (
     <div style={{
       minHeight: "100vh",
+      background: "#050505",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "#0b0b0b",
-      color: "white",
+      padding: 20,
+      color: "#fff",
       fontFamily: "Arial"
     }}>
 
       <div style={{
-        width: "360px",
+        width: "100%",
+        maxWidth: 420,
         background: "#111",
-        padding: "30px",
-        borderRadius: "16px",
-        border: "1px solid #222"
+        border: "1px solid #1f1f1f",
+        borderRadius: 30,
+        padding: 35
       }}>
 
         <h1 style={{
-          color: "#f5c542",
-          marginBottom: "20px"
+          fontSize: 42,
+          marginBottom: 10,
+          color: "#f5c542"
         }}>
-          Login Plataforma
+          LOGIN
         </h1>
 
+        <p style={{
+          opacity: 0.6,
+          marginBottom: 30
+        }}>
+          Entre na plataforma premium.
+        </p>
+
         <input
-          placeholder="Email"
+          placeholder="Seu e-mail"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
           style={{
             width: "100%",
-            padding: "12px",
-            marginBottom: "10px",
-            background: "#0b0b0b",
-            border: "1px solid #222",
-            color: "white",
-            borderRadius: "8px"
+            background: "#0d0d0d",
+            border: "1px solid #1f1f1f",
+            borderRadius: 18,
+            padding: 18,
+            color: "#fff",
+            marginBottom: 18,
+            outline: "none"
           }}
         />
 
         <input
-          placeholder="Senha"
           type="password"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
+          placeholder="Sua senha"
+          value={password}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
           style={{
             width: "100%",
-            padding: "12px",
-            marginBottom: "20px",
-            background: "#0b0b0b",
-            border: "1px solid #222",
-            color: "white",
-            borderRadius: "8px"
+            background: "#0d0d0d",
+            border: "1px solid #1f1f1f",
+            borderRadius: 18,
+            padding: 18,
+            color: "#fff",
+            marginBottom: 18,
+            outline: "none"
           }}
         />
 
         <button
-          onClick={entrar}
-          disabled={loading}
+          onClick={handleLogin}
           style={{
             width: "100%",
-            padding: "12px",
-            background: "#333",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            marginBottom: "10px",
-            cursor: "pointer"
-          }}
-        >
-          Entrar FREE
-        </button>
-
-        <button
-          onClick={entrarPro}
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "12px",
-            background: "linear-gradient(90deg,#f5c542,#ffdf70)",
+            background: "#f5c542",
             color: "#000",
             border: "none",
-            borderRadius: "8px",
+            borderRadius: 18,
+            padding: 18,
             fontWeight: "bold",
             cursor: "pointer"
           }}
         >
-          Entrar PRO
+
+          {loading
+            ? "Entrando..."
+            : "ENTRAR"}
+
+        </button>
+
+        <button
+          onClick={handleRegister}
+          style={{
+            width: "100%",
+            background: "#222",
+            color: "#fff",
+            border: "none",
+            borderRadius: 18,
+            padding: 18,
+            fontWeight: "bold",
+            cursor: "pointer",
+            marginTop: 14
+          }}
+        >
+          CRIAR CONTA
         </button>
 
       </div>

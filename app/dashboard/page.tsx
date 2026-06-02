@@ -1,280 +1,572 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { isLoggedIn, isProUser, logout } from "@/lib/authGuard"
+import {
+  useState
+} from "react"
 
-const mensagens = [
-  "Fluxo institucional detectado",
-  "Movimento de grandes players",
-  "Alta liquidez em ativos chave",
-  "Tendência macro positiva",
-  "Correlação entre mercados ativa",
-  "Pressão compradora aumentando",
-  "Volatilidade controlada",
-  "Oportunidade identificada pela IA"
+import {
+  TrendingUp,
+  Bitcoin,
+  DollarSign,
+  Activity,
+  Wallet,
+  BarChart3,
+  LogOut,
+  Send,
+  Sparkles,
+  Crown
+} from "lucide-react"
+
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts"
+
+import { useAuth } from "@/lib/auth"
+
+const chartData = [
+  { mes: "Jan", valor: 12000 },
+  { mes: "Fev", valor: 18000 },
+  { mes: "Mar", valor: 26000 },
+  { mes: "Abr", valor: 34000 },
+  { mes: "Mai", valor: 52000 },
+  { mes: "Jun", valor: 68000 }
 ]
 
-export default function Dashboard() {
-  const router = useRouter()
+const watchlist = [
+  {
+    ativo: "BTC",
+    nome: "Bitcoin",
+    valor: "R$ 612.420",
+    variacao: "+4.28%"
+  },
+  {
+    ativo: "PETR4",
+    nome: "Petrobras",
+    valor: "R$ 41,82",
+    variacao: "+2.12%"
+  },
+  {
+    ativo: "VALE3",
+    nome: "Vale",
+    valor: "R$ 63,10",
+    variacao: "+1.82%"
+  },
+  {
+    ativo: "ETH",
+    nome: "Ethereum",
+    valor: "R$ 18.240",
+    variacao: "+6.12%"
+  }
+]
 
-  const [loading, setLoading] = useState(true)
-  const [carteira, setCarteira] = useState(12840)
-  const [mercado, setMercado] = useState("NEUTRO")
-  const [view, setView] = useState("dashboard")
-  const [isPro, setIsPro] = useState(false)
-  const [feed, setFeed] = useState(["Sistema inicializado"])
+export default function DashboardPage() {
 
-  const KIWIFY = "https://pay.kiwify.com.br/SEU-LINK-AQUI"
+  const {
+    user,
+    logout,
+    premium
+  } = useAuth()
 
-  useEffect(() => {
-    if (!isLoggedIn()) {
-      router.replace("/login")
-      return
-    }
+  const [prompt, setPrompt] =
+    useState("")
 
-    setIsPro(isProUser())
-    setLoading(false)
-  }, [router])
+  const [response, setResponse] =
+    useState("")
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const r = Math.random()
+  const [loading, setLoading] =
+    useState(false)
 
-      setMercado(
-        r > 0.6 ? "📈 Alta" :
-        r < 0.3 ? "📉 Queda" :
-        "➖ Lateral"
+  async function askAI() {
+
+    if (!prompt) return
+
+    setLoading(true)
+
+    try {
+
+      const req =
+        await fetch("/api/ai", {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify({
+            prompt
+          })
+        })
+
+      const data =
+        await req.json()
+
+      setResponse(
+        data.response
       )
 
-      if (r > 0.6) setCarteira(v => v + Math.random() * 300)
-      if (r < 0.3) setCarteira(v => v - Math.random() * 250)
+    } catch (error) {
 
-      const msg = mensagens[Math.floor(Math.random() * mensagens.length)]
-      setFeed(prev => [msg, ...prev.slice(0, 5)])
-    }, 2500)
+      setResponse(
+        "Erro ao consultar IA."
+      )
 
-    return () => clearInterval(interval)
-  }, [])
+    } finally {
 
-  function sair() {
-    logout()
-    router.replace("/login")
-  }
-
-  function ativarPro() {
-    window.location.href = KIWIFY
-  }
-
-  if (loading) {
-    return (
-      <div style={{
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#050505",
-        color: "#f5c542",
-        flexDirection: "column"
-      }}>
-        <div style={{
-          width: 45,
-          height: 45,
-          border: "3px solid rgba(245,197,66,0.2)",
-          borderTop: "3px solid #f5c542",
-          borderRadius: "50%",
-          animation: "spin 1s linear infinite"
-        }} />
-        <p style={{ marginTop: 15 }}>Carregando sistema financeiro...</p>
-      </div>
-    )
+      setLoading(false)
+    }
   }
 
   return (
     <div style={{
-      display: "flex",
       minHeight: "100vh",
       background: "#050505",
       color: "#fff",
-      fontFamily: "Arial"
+      fontFamily: "Arial",
+      padding: 24
     }}>
 
-      {/* SIDEBAR */}
+      {/* HEADER */}
       <div style={{
-        width: 260,
-        background: "rgba(15,15,15,0.95)",
-        padding: 25,
-        borderRight: "1px solid rgba(255,255,255,0.05)"
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 30,
+        flexWrap: "wrap",
+        gap: 20
       }}>
 
-        <h2 style={{ color: "#f5c542" }}>
-          Pellegrineli Invest
-        </h2>
+        <div>
 
-        <p style={{ opacity: 0.5, marginBottom: 20 }}>
-          {isPro ? "Conta PRO ativa" : "Conta FREE - limitada"}
-        </p>
-
-        {["dashboard", "carteira", "mercado"].map(v => (
-          <button
-            key={v}
-            onClick={() => setView(v)}
-            style={btn(view === v)}
-          >
-            {v.toUpperCase()}
-          </button>
-        ))}
-
-        {!isPro && (
-          <div style={{
-            marginTop: 25,
-            padding: 15,
-            borderRadius: 12,
-            background: "rgba(245,197,66,0.08)",
-            border: "1px solid rgba(245,197,66,0.25)"
+          <h1 style={{
+            fontSize: 42,
+            color: "#f5c542",
+            marginBottom: 8
           }}>
-            <p style={{ fontSize: 13, opacity: 0.8 }}>
-              🚀 IA Financeira ilimitada + sinais avançados
-            </p>
+            Pellegrineli Terminal
+          </h1>
 
-            <button
-              onClick={ativarPro}
-              style={{
-                width: "100%",
-                marginTop: 10,
-                padding: 12,
-                borderRadius: 10,
-                background: "linear-gradient(90deg,#f5c542,#ffdf70)",
-                border: "none",
-                fontWeight: "bold",
-                cursor: "pointer"
-              }}
-            >
-              Desbloquear PRO
-            </button>
+          <p style={{
+            opacity: 0.7
+          }}>
+            {user?.email}
+          </p>
 
-            <p style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}>
-              acesso completo ao painel institucional
-            </p>
-          </div>
-        )}
+        </div>
 
         <button
-          onClick={sair}
+          onClick={logout}
           style={{
-            width: "100%",
-            marginTop: 15,
-            padding: 12,
-            borderRadius: 10,
-            background: "transparent",
-            border: "1px solid #333",
-            color: "#fff"
+            background: "#111",
+            border: "1px solid #1f1f1f",
+            color: "#fff",
+            padding: "14px 20px",
+            borderRadius: 16,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 10
           }}
         >
+
+          <LogOut size={18} />
+
           Sair
+
         </button>
 
       </div>
 
-      {/* CONTEÚDO */}
+      {/* TOP CARDS */}
       <div style={{
-        flex: 1,
-        padding: 35,
-        animation: "fadeIn 0.4s ease"
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fit,minmax(240px,1fr))",
+        gap: 20,
+        marginBottom: 30
       }}>
 
-        <h1 style={{ fontSize: 34 }}>
-          {view.toUpperCase()}
-        </h1>
+        <Card
+          icon={<Wallet color="#f5c542" />}
+          title="Patrimônio"
+          value="R$ 128.420"
+          change="+18.42%"
+        />
 
-        <p style={{ opacity: 0.5, marginBottom: 25 }}>
-          Sistema de inteligência financeira em tempo real
-        </p>
+        <Card
+          icon={<TrendingUp color="#4ade80" />}
+          title="Rentabilidade"
+          value="+28.14%"
+          change="Últimos 30 dias"
+        />
 
+        <Card
+          icon={<Bitcoin color="#f7931a" />}
+          title="Bitcoin"
+          value="R$ 612.420"
+          change="+4.82%"
+        />
+
+        <Card
+          icon={<Activity color="#60a5fa" />}
+          title="Performance"
+          value="92%"
+          change="Assertividade"
+        />
+
+      </div>
+
+      {/* GRID */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns:
+          "2fr 1fr",
+        gap: 24,
+        marginBottom: 30
+      }}>
+
+        {/* CHART */}
         <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-          gap: 20
+          background: "#111",
+          border: "1px solid #1f1f1f",
+          borderRadius: 30,
+          padding: 30
         }}>
-          <Card title="Carteira" value={`R$ ${carteira.toFixed(2)}`} />
-          <Card title="Mercado" value={mercado} />
+
+          <div style={{
+            marginBottom: 24
+          }}>
+
+            <h2 style={{
+              fontSize: 32,
+              color: "#f5c542",
+              marginBottom: 10
+            }}>
+              Evolução Patrimonial
+            </h2>
+
+          </div>
+
+          <div style={{
+            width: "100%",
+            height: 360
+          }}>
+
+            <ResponsiveContainer>
+
+              <AreaChart data={chartData}>
+
+                <XAxis dataKey="mes" />
+
+                <YAxis />
+
+                <Tooltip />
+
+                <Area
+                  type="monotone"
+                  dataKey="valor"
+                  stroke="#f5c542"
+                  fill="rgba(245,197,66,0.2)"
+                  strokeWidth={4}
+                />
+
+              </AreaChart>
+
+            </ResponsiveContainer>
+
+          </div>
+
         </div>
 
+        {/* WATCHLIST */}
         <div style={{
-          marginTop: 30,
-          padding: 20,
-          borderRadius: 16,
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.06)"
+          background: "#111",
+          border: "1px solid #1f1f1f",
+          borderRadius: 30,
+          padding: 30
         }}>
-          <h3 style={{ color: "#f5c542" }}>Inteligência de Mercado</h3>
 
-          {feed.slice(0, isPro ? 5 : 2).map((item, i) => (
-            <div key={i} style={{
-              marginTop: 10,
-              padding: 12,
-              background: "#111",
-              borderRadius: 10
-            }}>
-              {item}
-            </div>
-          ))}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 24
+          }}>
 
-          {!isPro && (
-            <div style={{
-              marginTop: 15,
-              padding: 12,
-              border: "1px dashed #f5c542",
-              borderRadius: 10,
-              color: "#f5c542"
+            <BarChart3 color="#f5c542" />
+
+            <h2 style={{
+              fontSize: 28
             }}>
-              desbloqueie insights completos no PRO
-            </div>
-          )}
+              Watchlist
+            </h2>
+
+          </div>
+
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16
+          }}>
+
+            {watchlist.map((item, index) => (
+
+              <div
+                key={index}
+                style={{
+                  background: "#0d0d0d",
+                  border: "1px solid #1f1f1f",
+                  borderRadius: 18,
+                  padding: 18
+                }}
+              >
+
+                <div style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 8
+                }}>
+
+                  <strong>
+                    {item.ativo}
+                  </strong>
+
+                  <span style={{
+                    color: "#4ade80"
+                  }}>
+                    {item.variacao}
+                  </span>
+
+                </div>
+
+                <div style={{
+                  opacity: 0.7,
+                  fontSize: 14
+                }}>
+                  {item.nome}
+                </div>
+
+                <div style={{
+                  marginTop: 8,
+                  fontSize: 20
+                }}>
+                  {item.valor}
+                </div>
+
+              </div>
+
+            ))}
+
+          </div>
+
         </div>
 
       </div>
 
-      <style jsx global>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
+      {/* IA PREMIUM */}
+      <div style={{
+        background: "#111",
+        border: "1px solid #1f1f1f",
+        borderRadius: 30,
+        padding: 30
+      }}>
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 24
+        }}>
+
+          <Sparkles color="#f5c542" />
+
+          <h2 style={{
+            fontSize: 32
+          }}>
+            Pellegrineli AI
+          </h2>
+
+        </div>
+
+        {premium ? (
+
+          <>
+            <div style={{
+              display: "flex",
+              gap: 14,
+              marginBottom: 24,
+              flexWrap: "wrap"
+            }}>
+
+              <input
+                value={prompt}
+                onChange={(e) =>
+                  setPrompt(
+                    e.target.value
+                  )
+                }
+                placeholder="Pergunte sobre investimentos..."
+                style={{
+                  flex: 1,
+                  minWidth: 260,
+                  background: "#0d0d0d",
+                  border: "1px solid #1f1f1f",
+                  color: "#fff",
+                  padding: 18,
+                  borderRadius: 18,
+                  outline: "none",
+                  fontSize: 16
+                }}
+              />
+
+              <button
+                onClick={askAI}
+                style={{
+                  background: "#f5c542",
+                  color: "#000",
+                  border: "none",
+                  padding: "18px 24px",
+                  borderRadius: 18,
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10
+                }}
+              >
+
+                <Send size={18} />
+
+                Perguntar
+
+              </button>
+
+            </div>
+
+            <div style={{
+              background: "#0d0d0d",
+              border: "1px solid #1f1f1f",
+              borderRadius: 24,
+              padding: 24,
+              minHeight: 140,
+              lineHeight: 1.7,
+              color: "#d4d4d4"
+            }}>
+
+              {loading
+                ? "Pensando..."
+                : response || "A IA financeira responderá aqui."}
+
+            </div>
+          </>
+
+        ) : (
+
+          <div style={{
+            background:
+              "linear-gradient(135deg,#f5c54222,#0d0d0d)",
+            border:
+              "1px solid #f5c54244",
+            borderRadius: 24,
+            padding: 40,
+            textAlign: "center"
+          }}>
+
+            <Crown
+              size={64}
+              color="#f5c542"
+              style={{
+                marginBottom: 24
+              }}
+            />
+
+            <h2 style={{
+              fontSize: 34,
+              marginBottom: 18,
+              color: "#f5c542"
+            }}>
+              Conteúdo Premium
+            </h2>
+
+            <p style={{
+              opacity: 0.7,
+              marginBottom: 30,
+              fontSize: 18
+            }}>
+              Faça upgrade para acessar
+              IA financeira ilimitada.
+            </p>
+
+            <button
+              style={{
+                background: "#f5c542",
+                color: "#000",
+                border: "none",
+                padding: "18px 32px",
+                borderRadius: 18,
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: 18
+              }}
+            >
+              VIRAR PREMIUM
+            </button>
+
+          </div>
+
+        )}
+
+      </div>
 
     </div>
   )
 }
 
-function Card({ title, value }: any) {
+function Card({
+  icon,
+  title,
+  value,
+  change
+}: any) {
+
   return (
     <div style={{
-      padding: 20,
-      borderRadius: 16,
       background: "#111",
-      border: "1px solid #222"
+      border: "1px solid #1f1f1f",
+      borderRadius: 24,
+      padding: 24
     }}>
-      <p style={{ opacity: 0.5 }}>{title}</p>
-      <h2>{value}</h2>
+
+      <div style={{
+        marginBottom: 18
+      }}>
+        {icon}
+      </div>
+
+      <p style={{
+        opacity: 0.6,
+        marginBottom: 10
+      }}>
+        {title}
+      </p>
+
+      <h2 style={{
+        fontSize: 30,
+        marginBottom: 10
+      }}>
+        {value}
+      </h2>
+
+      <div style={{
+        color: "#4ade80",
+        fontWeight: "bold"
+      }}>
+        {change}
+      </div>
+
     </div>
   )
-}
-
-function btn(active: boolean): React.CSSProperties {
-  return {
-    width: "100%",
-    padding: 12,
-    marginTop: 10,
-    borderRadius: 10,
-    background: active ? "#1a1a1a" : "transparent",
-    border: "1px solid #333",
-    color: "#fff",
-    textAlign: "left" as const,
-    cursor: "pointer"
-  }
 }

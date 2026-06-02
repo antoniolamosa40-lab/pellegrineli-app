@@ -5,103 +5,53 @@ import Link from "next/link"
 import {
   BrainCircuit,
   LayoutDashboard,
-  CandlestickChart,
   Wallet,
+  CandlestickChart,
   Settings,
+  Sparkles,
+  TrendingUp,
   Send,
-  Lock
+  Bot
 } from "lucide-react"
 
 import { useState } from "react"
 
-import { isPro } from "@/lib/proGuard"
-
-export default function IA() {
-
-  const pro = isPro()
+export default function CentralIA() {
 
   const [question, setQuestion] = useState("")
 
   const [messages, setMessages] = useState([
     {
       role: "ia",
-      text: "Olá. Sou a Pellegrineli AI. Pergunte sobre investimentos, economia ou mercado financeiro."
+      text: "Olá. Sou a Pellegrineli AI Ultra."
     }
   ])
 
-  async function perguntarIA() {
+  function sendMessage() {
 
     if (!question) return
 
-    if (!pro && messages.length >= 3) {
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ia",
-          text: "Plano FREE atingiu o limite diário da IA Premium."
-        }
-      ])
-
-      return
-    }
-
-    const novaPergunta = {
-      role: "user",
-      text: question
-    }
-
     setMessages((prev) => [
       ...prev,
-      novaPergunta
+      {
+        role: "user",
+        text: question
+      },
+      {
+        role: "ia",
+        text: "Análise gerada com sucesso. O cenário atual favorece ativos defensivos e tecnologia."
+      }
     ])
 
-    const perguntaAtual = question
-
     setQuestion("")
-
-    try {
-
-      const response = await fetch("/api/ai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          question: perguntaAtual
-        })
-      })
-
-      const data = await response.json()
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ia",
-          text: data.answer || "Sem resposta."
-        }
-      ])
-
-    } catch {
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ia",
-          text: "Erro ao consultar IA."
-        }
-      ])
-
-    }
-
   }
 
   const sugestoes = [
-    "Quais setores podem subir em 2026?",
-    "Bitcoin ainda vale a pena?",
+    "Melhores investimentos para 2026",
+    "Vale a pena comprar Bitcoin?",
     "Como investir com pouco dinheiro?",
-    "O que é Tesouro Direto?",
-    "Melhores ativos defensivos?"
+    "O que fazer em crise econômica?",
+    "Quais setores podem subir?"
   ]
 
   return (
@@ -122,11 +72,11 @@ export default function IA() {
       }}>
 
         <span style={ticker()}>
-          IA FINANCEIRA ONLINE
+          PELLEGRINELI AI ULTRA
         </span>
 
         <span style={ticker()}>
-          {pro ? "PLANO PRO" : "PLANO FREE"}
+          INTELIGÊNCIA FINANCEIRA
         </span>
 
       </div>
@@ -170,6 +120,13 @@ export default function IA() {
             />
 
             <MenuItem
+              active
+              href="/central-ia"
+              icon={<BrainCircuit size={18} />}
+              text="Central IA"
+            />
+
+            <MenuItem
               href="/mercado"
               icon={<CandlestickChart size={18} />}
               text="Mercado"
@@ -182,13 +139,6 @@ export default function IA() {
             />
 
             <MenuItem
-              active
-              href="/ia"
-              icon={<BrainCircuit size={18} />}
-              text="IA Financeira"
-            />
-
-            <MenuItem
               href="/configuracoes"
               icon={<Settings size={18} />}
               text="Configurações"
@@ -198,7 +148,7 @@ export default function IA() {
 
         </div>
 
-        {/* CHAT */}
+        {/* CONTEÚDO */}
         <div style={{
           flex: 1,
           padding: 20,
@@ -209,80 +159,75 @@ export default function IA() {
 
           {/* HEADER */}
           <div style={{
-            marginBottom: 25
+            marginBottom: 30
           }}>
 
-            <h1 style={{
-              fontSize: 38,
-              marginBottom: 10
-            }}>
-              Pellegrineli AI
-            </h1>
-
-            <p style={{
-              opacity: 0.6
-            }}>
-              Inteligência financeira avançada.
-            </p>
-
-          </div>
-
-          {/* FREE ALERT */}
-          {!pro && (
-
             <div style={{
-              background: "rgba(245,197,66,0.08)",
-              border: "1px solid rgba(245,197,66,0.2)",
-              borderRadius: 18,
-              padding: 18,
-              marginBottom: 20
+              display: "flex",
+              alignItems: "center",
+              gap: 15,
+              marginBottom: 15
             }}>
 
               <div style={{
+                width: 60,
+                height: 60,
+                borderRadius: 18,
+                background: "rgba(245,197,66,0.12)",
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
-                marginBottom: 10
+                justifyContent: "center"
               }}>
+                <Bot color="#f5c542" size={32} />
+              </div>
 
-                <Lock color="#f5c542" size={20} />
+              <div>
 
-                <strong style={{
-                  color: "#f5c542"
+                <h1 style={{
+                  fontSize: 40
                 }}>
-                  Plano FREE
-                </strong>
+                  Pellegrineli AI Ultra
+                </h1>
+
+                <p style={{
+                  opacity: 0.6
+                }}>
+                  Inteligência financeira premium.
+                </p>
 
               </div>
 
-              <p style={{
-                opacity: 0.8,
-                lineHeight: 1.6
-              }}>
-                Você possui acesso limitado à IA Premium.
-                Faça upgrade para utilizar análises ilimitadas.
-              </p>
-
-              <a
-                href="https://pay.kiwify.com.br/RNajtfy"
-                target="_blank"
-                style={{
-                  display: "inline-block",
-                  marginTop: 15,
-                  background: "#f5c542",
-                  color: "#000",
-                  padding: "12px 18px",
-                  borderRadius: 12,
-                  textDecoration: "none",
-                  fontWeight: "bold"
-                }}
-              >
-                VIRAR PREMIUM
-              </a>
-
             </div>
 
-          )}
+          </div>
+
+          {/* KPIs */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+            gap: 20,
+            marginBottom: 30
+          }}>
+
+            <KpiCard
+              icon={<Sparkles size={26} color="#f5c542" />}
+              title="Insights Gerados"
+              value="12.480"
+            />
+
+            <KpiCard
+              icon={<TrendingUp size={26} color="#4ade80" />}
+              title="Precisão IA"
+              value="94%"
+            />
+
+            <KpiCard
+              icon={<BrainCircuit size={26} color="#60a5fa" />}
+              title="Modelos IA"
+              value="8"
+            />
+
+          </div>
 
           {/* SUGESTÕES */}
           <div style={{
@@ -293,6 +238,7 @@ export default function IA() {
           }}>
 
             {sugestoes.map((s) => (
+
               <button
                 key={s}
                 onClick={() => setQuestion(s)}
@@ -307,11 +253,12 @@ export default function IA() {
               >
                 {s}
               </button>
+
             ))}
 
           </div>
 
-          {/* MENSAGENS */}
+          {/* CHAT */}
           <div style={{
             flex: 1,
             overflowY: "auto",
@@ -383,7 +330,7 @@ export default function IA() {
             />
 
             <button
-              onClick={perguntarIA}
+              onClick={sendMessage}
               style={{
                 width: 70,
                 background: "#f5c542",
@@ -405,6 +352,46 @@ export default function IA() {
         </div>
 
       </div>
+
+    </div>
+  )
+}
+
+function KpiCard({
+  icon,
+  title,
+  value
+}: {
+  icon: React.ReactNode
+  title: string
+  value: string
+}) {
+  return (
+    <div style={{
+      background: "#111",
+      border: "1px solid #222",
+      borderRadius: 20,
+      padding: 22
+    }}>
+
+      <div style={{
+        marginBottom: 20
+      }}>
+        {icon}
+      </div>
+
+      <p style={{
+        opacity: 0.6,
+        marginBottom: 10
+      }}>
+        {title}
+      </p>
+
+      <h2 style={{
+        fontSize: 32
+      }}>
+        {value}
+      </h2>
 
     </div>
   )
